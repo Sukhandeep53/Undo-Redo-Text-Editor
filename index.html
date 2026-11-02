@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undo–Redo Text Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">U</div>
+            <div>
+                <h1>Undo<span>Redo</span></h1>
+                <p>Simple editor. Smart history.</p>
+            </div>
+        </div>
+        <div class="status"><span class="status-dot"></span> C++ server connected</div>
+    </header>
+
+    <main class="layout">
+        <section class="editor-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">YOUR WORKSPACE</p>
+                    <h2>Text Editor</h2>
+                </div>
+                <span class="file-label">Untitled document</span>
+            </div>
+
+            <div class="toolbar">
+                <button id="undoBtn" class="tool-btn" disabled>↶ <span>Undo</span></button>
+                <button id="redoBtn" class="tool-btn" disabled>↷ <span>Redo</span></button>
+                <div class="toolbar-divider"></div>
+                <button id="clearBtn" class="tool-btn clear-btn">Clear document</button>
+            </div>
+
+            <div class="document-wrap">
+                <div class="document-label"><span class="live-dot"></span> DOCUMENT CONTENT</div>
+                <textarea id="document" readonly placeholder="Your inserted text will appear here..."></textarea>
+                <div class="document-footer">
+                    <span id="charCount">0 characters</span>
+                    <span id="wordCount">0 words</span>
+                </div>
+            </div>
+
+            <div class="insert-area">
+                <label for="newText">ADD TEXT</label>
+                <textarea id="newText" rows="3" placeholder="Type the text you want to insert..."></textarea>
+                <div class="insert-footer">
+                    <span>Text is added to the end of the document.</span>
+                    <button id="insertBtn" class="primary-btn">＋ Insert text</button>
+                </div>
+            </div>
+            <p id="message" class="message" aria-live="polite"></p>
+        </section>
+
+        <aside class="side-panel">
+            <div class="stats-card">
+                <p class="eyebrow">EDITOR ACTIVITY</p>
+                <h2>Quick overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-icon">↶</span>
+                        <strong id="undoCount">0</strong>
+                        <small>Undo steps</small>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-icon">↷</span>
+                        <strong id="redoCount">0</strong>
+                        <small>Redo steps</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-card">
+                <div class="history-heading">
+                    <div>
+                        <p class="eyebrow">DOUBLY LINKED LIST</p>
+                        <h2>Edit history</h2>
+                    </div>
+                    <span id="historyCount" class="history-count">0</span>
+                </div>
+                <p class="history-description">Your recent actions, from oldest to newest.</p>
+                <ol id="historyList" class="history-list">
+                    <li class="empty-history">No edits yet. Start writing!</li>
+                </ol>
+            </div>
+
+            <div class="info-card">
+                <div class="info-icon">✦</div>
+                <div>
+                    <strong>Powered by data structures</strong>
+                    <p>Stacks manage Undo/Redo. A doubly linked list records your edit history.</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer>UndoRedo Editor <span>•</span> Built with C++ and data structures</footer>
+    <script src="script.js"></script>
+</body>
+</html>
