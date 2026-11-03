@@ -1,103 +1,216 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Undo–Redo Text Editor</title>
+    <title>Undo-Redo Text Editor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="topbar">
-        <div class="brand">
-            <div class="brand-icon">U</div>
-            <div>
-                <h1>Undo<span>Redo</span></h1>
-                <p>Simple editor. Smart history.</p>
-            </div>
-        </div>
-        <div class="status"><span class="status-dot"></span> C++ server connected</div>
+
+<main class="app-container">
+
+    <header class="main-header">
+        <p class="eyebrow">ADVANCED DATA STRUCTURES PROJECT</p>
+        <h1>UNDO–REDO TEXT EDITOR</h1>
     </header>
 
-    <main class="layout">
-        <section class="editor-panel">
-            <div class="panel-heading">
+    <div class="app-layout">
+
+        <!-- LEFT COLUMN -->
+        <section class="editor-column">
+
+            <div class="section-heading">
                 <div>
-                    <p class="eyebrow">YOUR WORKSPACE</p>
                     <h2>Text Editor</h2>
+                    <p>Your workspace</p>
                 </div>
-                <span class="file-label">Untitled document</span>
+
+                <div class="editor-actions">
+                    <button id="undoBtn" class="btn secondary-btn">↶ Undo</button>
+                    <button id="redoBtn" class="btn secondary-btn">↷ Redo</button>
+                    <button id="clearBtn" class="btn danger-btn">Clear</button>
+                </div>
             </div>
 
-            <div class="toolbar">
-                <button id="undoBtn" class="tool-btn" disabled>↶ <span>Undo</span></button>
-                <button id="redoBtn" class="tool-btn" disabled>↷ <span>Redo</span></button>
-                <div class="toolbar-divider"></div>
-                <button id="clearBtn" class="tool-btn clear-btn">Clear document</button>
-            </div>
+            <!-- DOCUMENT -->
+            <section class="card document-card">
 
-            <div class="document-wrap">
-                <div class="document-label"><span class="live-dot"></span> DOCUMENT CONTENT</div>
-                <textarea id="document" readonly placeholder="Your inserted text will appear here..."></textarea>
+                <div class="card-heading">
+                    <h3>Document</h3>
+                    <span class="live-indicator">● Editor</span>
+                </div>
+
+                <div class="editor-highlight-wrapper">
+                    <div id="highlightLayer"
+                         class="highlight-layer"
+                         aria-hidden="true"></div>
+
+                    <textarea
+                        id="document"
+                        placeholder="Your document will appear here..."
+                        spellcheck="false"
+                    ></textarea>
+                </div>
+
                 <div class="document-footer">
-                    <span id="charCount">0 characters</span>
-                    <span id="wordCount">0 words</span>
+                    <span>Words: <strong id="wordCount">0 words</strong></span>
+                    <span>Characters: <strong id="charCount">0 characters</strong></span>
                 </div>
+
+            </section>
+
+            <!-- INSERT AND FIND -->
+            <div class="tools-grid">
+
+                <section class="card tool-card">
+
+                    <div class="card-heading">
+                        <h3>Insert Text</h3>
+                        <span class="tool-icon">✎</span>
+                    </div>
+
+                    <p class="card-description">
+                        Add new text to your document.
+                    </p>
+
+                    <textarea
+                        id="newText"
+                        class="small-input"
+                        placeholder="Type your text here..."
+                    ></textarea>
+
+                    <button id="insertBtn" class="btn primary-btn">
+                        Insert Text
+                    </button>
+
+                </section>
+
+                <section class="card tool-card">
+
+                    <div class="card-heading">
+                        <h3>Find &amp; Replace</h3>
+                        <span class="tool-icon">⌕</span>
+                    </div>
+
+                    <p class="card-description">
+                        Search and replace words in your document.
+                    </p>
+
+                    <input
+                        type="text"
+                        id="findText"
+                        class="text-input"
+                        placeholder="Enter word to find"
+                    >
+
+                    <input
+                        type="text"
+                        id="replaceText"
+                        class="text-input"
+                        placeholder="Replace with..."
+                    >
+
+                    <div class="find-buttons">
+                        <button id="findBtn" class="btn secondary-btn">
+                            Find Word
+                        </button>
+
+                        <button id="replaceBtn" class="btn primary-btn">
+                            Replace All
+                        </button>
+                    </div>
+
+                    <p id="findResult" class="find-result">
+                        Search your document for any word.
+                    </p>
+
+                </section>
+
             </div>
 
-            <div class="insert-area">
-                <label for="newText">ADD TEXT</label>
-                <textarea id="newText" rows="3" placeholder="Type the text you want to insert..."></textarea>
-                <div class="insert-footer">
-                    <span>Text is added to the end of the document.</span>
-                    <button id="insertBtn" class="primary-btn">＋ Insert text</button>
-                </div>
-            </div>
-            <p id="message" class="message" aria-live="polite"></p>
+            <p id="message" class="message-box"></p>
+
         </section>
 
-        <aside class="side-panel">
-            <div class="stats-card">
-                <p class="eyebrow">EDITOR ACTIVITY</p>
-                <h2>Quick overview</h2>
+        <!-- RIGHT COLUMN -->
+        <aside class="sidebar">
+
+            <!-- STACK -->
+            <section class="card stack-card">
+
+                <div class="card-heading">
+                    <h3>Stack-Based History</h3>
+                    <span class="tool-icon">▤</span>
+                </div>
+
+                <p class="card-description">
+                    Manage previous and future editing actions.
+                </p>
+
+                <div class="stack-visual">
+                    <div class="stack-block stack-one">Latest Edit</div>
+                    <div class="stack-block stack-two">Previous Edit</div>
+                    <div class="stack-block stack-three">Earlier Edit</div>
+                </div>
+
+            </section>
+
+            <!-- STATISTICS -->
+            <section class="card stats-card">
+
+                <div class="card-heading">
+                    <h3>Statistics</h3>
+                    <span class="tool-icon">▥</span>
+                </div>
+
                 <div class="stats-grid">
+
                     <div class="stat-box">
-                        <span class="stat-icon">↶</span>
+                        <span class="stat-label">Undo Actions</span>
                         <strong id="undoCount">0</strong>
-                        <small>Undo steps</small>
                     </div>
+
                     <div class="stat-box">
-                        <span class="stat-icon">↷</span>
+                        <span class="stat-label">Redo Actions</span>
                         <strong id="redoCount">0</strong>
-                        <small>Redo steps</small>
                     </div>
-                </div>
-            </div>
 
-            <div class="history-card">
-                <div class="history-heading">
-                    <div>
-                        <p class="eyebrow">DOUBLY LINKED LIST</p>
-                        <h2>Edit history</h2>
-                    </div>
-                    <span id="historyCount" class="history-count">0</span>
                 </div>
-                <p class="history-description">Your recent actions, from oldest to newest.</p>
-                <ol id="historyList" class="history-list">
-                    <li class="empty-history">No edits yet. Start writing!</li>
-                </ol>
-            </div>
 
-            <div class="info-card">
-                <div class="info-icon">✦</div>
-                <div>
-                    <strong>Powered by data structures</strong>
-                    <p>Stacks manage Undo/Redo. A doubly linked list records your edit history.</p>
+            </section>
+
+            <!-- EDIT HISTORY -->
+            <section class="card history-card">
+
+                <div class="card-heading">
+                    <h3>Edit History</h3>
+                    <span class="history-counter" id="historyCount">0</span>
                 </div>
-            </div>
+
+                <p class="card-description">
+                    Your recent editing activities.
+                </p>
+
+                <ul id="historyList" class="history-list">
+                    <li class="empty-history">
+                        No edits yet. Start writing!
+                    </li>
+                </ul>
+
+            </section>
+
         </aside>
-    </main>
 
-    <footer>UndoRedo Editor <span>•</span> Built with C++ and data structures</footer>
-    <script src="script.js"></script>
+    </div>
+
+    <footer class="footer">
+        Undo-Redo Text Editor · Advanced Data Structures
+    </footer>
+
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
