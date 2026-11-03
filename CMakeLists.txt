@@ -1,11 +1,13 @@
-# Adafruit Bus IO Library
-# https://github.com/adafruit/Adafruit_BusIO
-# MIT License
+cmake_minimum_required(VERSION 3.15)
 
-cmake_minimum_required(VERSION 3.5)
+project(UndoRedoEditor)
 
-idf_component_register(SRCS "Adafruit_I2CDevice.cpp" "Adafruit_BusIO_Register.cpp" "Adafruit_SPIDevice.cpp" "Adafruit_GenericDevice.cpp"
-                       INCLUDE_DIRS "."
-                       REQUIRES arduino-esp32)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(Adafruit_BusIO)
+add_executable(undo_redo_editor main.cpp)
+
+target_include_directories(undo_redo_editor PRIVATE ${CMAKE_SOURCE_DIR})
+
+find_package(Threads REQUIRED)
+target_link_libraries(undo_redo_editor PRIVATE Threads::Threads)
