@@ -1,9 +1,11 @@
+
 #include <iostream>
 #include <string>
 #include <stack>
 #include <mutex>
 #include <sstream>
 #include <algorithm>
+#include <cstdlib>
 #include "httplib.h"
 
 using namespace std;
@@ -49,7 +51,6 @@ public:
 
         count++;
 
-        // Keep the most recent 100 actions to limit memory usage.
         if (count > 100) {
             Node* oldHead = head;
             head = head->next;
@@ -62,7 +63,7 @@ public:
     string toJson() const;
 };
 
-// Escape special characters so strings can safely be returned as JSON.
+// Escape special characters for JSON.
 string jsonEscape(const string& value) {
     string result;
 
@@ -101,7 +102,7 @@ string HistoryList::toJson() const {
     return result;
 }
 
-// Stack: previous document states are stored for Undo and Redo.
+// Stack: previous document states for Undo and Redo.
 stack<string> undoStack;
 stack<string> redoStack;
 string documentText;
@@ -117,13 +118,14 @@ string makeStateJson() {
     result += "\"redoCount\":" + to_string(redoStack.size()) + ",";
     result += "\"history\":" + editHistory.toJson();
     result += "}";
+
     return result;
 }
 
 int main() {
     httplib::Server server;
 
-    // Serve the website files from the public folder.
+    // Serve website files from public folder.
     server.set_mount_point("/", "./public");
 
     server.Get("/api/state", [](const httplib::Request&, httplib::Response& response) {
@@ -150,75 +152,74 @@ int main() {
     });
 
     server.Post("/api/find", [](const httplib::Request& request, httplib::Response& response) {
-    lock_guard<mutex> lock(editorMutex);
+        lock_guard<mutex> lock(editorMutex);
 
-    string searchText = request.body;
+        string searchText = request.body;
 
-    if (searchText.empty()) {
-        response.status = 400;
-        response.set_content("{\"message\":\"Please enter a word to search.\"}", "application/json");
-        return;
-    }
+        if (searchText.empty()) {
+            response.status = 400;
+            response.set_content("{\"message\":\"Please enter a word to search.\"}", "application/json");
+            return;
+        }
 
-    int count = 0;
-    size_t position = 0;
+        int count = 0;
+        size_t position = 0;
 
-    while ((position = documentText.find(searchText, position)) != string::npos) {
-        count++;
-        position += searchText.length();
-    }
+        while ((position = documentText.find(searchText, position)) != string::npos) {
+            count++;
+            position += searchText.length();
+        }
 
-    response.set_content("{\"count\":" + to_string(count) + "}", "application/json");
+        response.set_content("{\"count\":" + to_string(count) + "}", "application/json");
     });
 
     server.Post("/api/replace", [](const httplib::Request& request, httplib::Response& response) {
-    lock_guard<mutex> lock(editorMutex);
+        lock_guard<mutex> lock(editorMutex);
 
-    size_t separator = request.body.find('\n');
+        size_t separator = request.body.find('\n');
 
-    if (separator == string::npos) {
-        response.status = 400;
-        response.set_content("{\"message\":\"Invalid replacement request.\"}", "application/json");
-        return;
-    }
+        if (separator == string::npos) {
+            response.status = 400;
+            response.set_content("{\"message\":\"Invalid replacement request.\"}", "application/json");
+            return;
+        }
 
-    string searchText = request.body.substr(0, separator);
-    string replaceText = request.body.substr(separator + 1);
+        string searchText = request.body.substr(0, separator);
+        string replaceText = request.body.substr(separator + 1);
 
-    if (searchText.empty()) {
-        response.status = 400;
-        response.set_content("{\"message\":\"Please enter a word to find.\"}", "application/json");
-        return;
-    }
+        if (searchText.empty()) {
+            response.status = 400;
+            response.set_content("{\"message\":\"Please enter a word to find.\"}", "application/json");
+            return;
+        }
 
-    size_t position = 0;
-    int count = 0;
+        size_t position = 0;
+        int count = 0;
 
-    while ((position = documentText.find(searchText, position)) != string::npos) {
-        position += searchText.length();
-        count++;
-    }
+        while ((position = documentText.find(searchText, position)) != string::npos) {
+            position += searchText.length();
+            count++;
+        }
 
-    if (count == 0) {
-        response.status = 404;
-        response.set_content("{\"message\":\"Word not found in the document.\"}", "application/json");
-        return;
-    }
+        if (count == 0) {
+            response.status = 404;
+            response.set_content("{\"message\":\"Word not found in the document.\"}", "application/json");
+            return;
+        }
 
-    undoStack.push(documentText);
+        undoStack.push(documentText);
+        while (!redoStack.empty()) redoStack.pop();
 
-    while (!redoStack.empty()) redoStack.pop();
+        position = 0;
 
-    position = 0;
+        while ((position = documentText.find(searchText, position)) != string::npos) {
+            documentText.replace(position, searchText.length(), replaceText);
+            position += replaceText.length();
+        }
 
-    while ((position = documentText.find(searchText, position)) != string::npos) {
-        documentText.replace(position, searchText.length(), replaceText);
-        position += replaceText.length();
-    }
+        editHistory.add("Replaced " + to_string(count) + " occurrence(s)");
 
-    editHistory.add("Replaced " + to_string(count) + " occurrence(s)");
-
-    response.set_content(makeStateJson(), "application/json");
+        response.set_content(makeStateJson(), "application/json");
     });
 
     server.Post("/api/undo", [](const httplib::Request&, httplib::Response& response) {
@@ -271,11 +272,15 @@ int main() {
     cout << "========================================\n";
     cout << "       UNDO-REDO TEXT EDITOR\n";
     cout << "========================================\n";
-    cout << "Open your browser at: http://localhost:8080\n";
-    cout << "Press Ctrl + C to stop the server.\n";
 
-    if (!server.listen("0.0.0.0", 8080)) {
-        cerr << "Could not start server on port 8080.\n";
+    // Render provides the port through the PORT environment variable.
+    const char* portEnv = getenv("PORT");
+    int port = portEnv ? stoi(portEnv) : 8080;
+
+    cout << "Server running on port: " << port << "\n";
+
+    if (!server.listen("0.0.0.0", port)) {
+        cerr << "Could not start server.\n";
         return 1;
     }
 
